@@ -5,8 +5,8 @@ to insert them to your code, and for add the same time and date to the output fi
 Generate it single time, and use it for all of your targets (unlike the __DATE__ and __TIME__
 macros which are has different values for each C/C++ file, and also different with `date` output).
 
-Compile it using VSCode (`type code .` in command prompt) or by calling `umba-date.bat` 
-batch file (requires G++ available in your PATH).
+Compile it using VSCode (type `code .` in the command prompt) or by calling `umba-date.bat` 
+batch file (requires `g++` available in your PATH).
 
 Run `test.bat` to see how it works.
 
