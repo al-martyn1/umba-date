@@ -1,15 +1,16 @@
 # Date and time generation utility
 
 Pirpouse: use it in your build pipeline to generate macros `UMBA_DATE__` and `UMBA_TIME__` 
-to insert it to code, and for add the same time and date to the output file name.
+to insert them to your code, and for add the same time and date to the output file name.
+Generate it single time, and use it for all of your targets (unlike the __DATE__ and __TIME__
+macros which are has different values for each C/C++ file, and also different with `date` output).
 
 Compile it using VSCode (`type code .` in command prompt) or by calling `umba-date.bat` 
 batch file (requires G++ available in your PATH).
 
 Run `test.bat` to see how it works.
 
-
-'''
+```
 Usage: umba-date [-lttime|-localtime|-gmtime] [-filename] -Type1 File1.txt [-Type2 File2.txt...]
   Where:
     -lttime,
@@ -27,10 +28,10 @@ Usage: umba-date [-lttime|-localtime|-gmtime] [-filename] -Type1 File1.txt [-Typ
     -timeqlf     - simple time in quotes with linefeed
     -datepp      - date as C/C++ macro expanding to string
     -timepp      - time as C/C++ macro expanding to string
-'''
+```
 
 Example: **test.bat**
-'''
+```
 umba-date.exe -gmtime  ^
 -date      gmdate.txt  ^
 -time      gmtime.txt  ^
@@ -49,6 +50,6 @@ umba-date.exe -gmtime  ^
 -timeqlf   timeqlf.txt ^
 -datepp    datepp.txt  ^
 -timepp    timepp.txt
-'''
+```
 
 Enjoy it!
