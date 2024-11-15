@@ -1,4 +1,4 @@
-# Date and time generation utility
+# Umba-date - Date and Time Generation Utility
 
 Pirpouse: use it in your build pipeline to generate macros `UMBA_DATE__` and `UMBA_TIME__` 
 to insert them to your code, and for add the same time and date to the output file name.
