@@ -1,4 +1,8 @@
+umba-date.exe -h >umba-date.txt 2>&1
+
 umba-date.exe -gmtime  ^
+-macroprefix TEST_     ^
+-macrosuffix ___       ^
 -date      gmdate.txt  ^
 -time      gmtime.txt  ^
 -localtime             ^
@@ -15,5 +19,11 @@ umba-date.exe -gmtime  ^
 -dateqlf   dateqlf.txt ^
 -timeqlf   timeqlf.txt ^
 -datepp    datepp.txt  ^
--timepp    timepp.txt
+-timepp    timepp.txt  ^
+-prefix    path/test   ^
+-suffix    .exe        ^
+-targetprefix another-path\test  ^
+-bat       copy_to_archive.bat   ^
+-sh        copy_to_archive.sh
+
 

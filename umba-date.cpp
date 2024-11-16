@@ -27,7 +27,16 @@ enum OutputType
    otDateQlf,
    otTimeQlf,
    otDatePp ,
-   otTimePp
+   otTimePp ,
+
+   otMacroPrefix ,
+   otMacroSuffix ,
+   otPrefix ,
+   otSuffix ,
+   otTargetPrefix ,
+   otBat    ,
+   otSh
+
 };
 
 
@@ -42,24 +51,53 @@ std::string strftimeUtil(const char *fmt, const std::tm & t)
 inline
 void printUsage()
 {
-    cerr << "Usage: umba-date [-lttime|-localtime|-gmtime] [-filename] -Type1 File1.txt [-Type2 File2.txt...]\n";
+    cerr << "Usage: umba-date [-lctime|-localtime|-gmtime] [-filename] -Type1 File1.txt [-Type2 File2.txt...]\n";
     cerr << "  Where:\n"
-            "    -lttime,\n"
-            "    -localtime   - set local time to output\n"
-            "    -gmtime      - set GMT time to output\n"
-            "    -filename    - use file name compatible date and time format. Date is also in form: 'YYYY-MM-DD' for best sorting\n"
-            "    -notfilename - turns '-filename' mode OFF\n"
-            "    -date        - simple date, no quotes, no linefeed\n"
-            "    -time        - simple time, no quotes, no linefeed\n"
-            "    -datelf      - simple date with linefeed\n"
-            "    -timelf      - simple time with linefeed\n"
-            "    -dateq       - simple date in quotes\n" 
-            "    -timeq       - simple time in quotes\n" 
-            "    -dateqlf     - simple date in quotes with linefeed\n"
-            "    -timeqlf     - simple time in quotes with linefeed\n"
-            "    -datepp      - date as C/C++ macro expanding to string\n" 
-            "    -timepp      - time as C/C++ macro expanding to string\n"
+            "    -lctime,\n"
+            "    -localtime     - set local time to output\n"
+            "    -gmtime        - set GMT time to output\n"
+            "    -filename      - use file name compatible date and time format. Date is also in form: 'YYYY-MM-DD' for best sorting\n"
+            "    -notfilename   - turns '-filename' mode OFF\n"
+            "    -date          - simple date, no quotes, no linefeed\n"
+            "    -time          - simple time, no quotes, no linefeed\n"
+            "    -datelf        - simple date with linefeed\n"
+            "    -timelf        - simple time with linefeed\n"
+            "    -dateq         - simple date in quotes\n" 
+            "    -timeq         - simple time in quotes\n" 
+            "    -dateqlf       - simple date in quotes with linefeed\n"
+            "    -timeqlf       - simple time in quotes with linefeed\n"
+            "    -datepp        - date as C/C++ macro expanding to string\n" 
+            "    -timepp        - time as C/C++ macro expanding to string\n"
+            "    -macroprefix   - used datepp/timepp files are generated\n"
+            "    -macrosuffix   - used datepp/timepp files are generated\n"
+            "    -bat           - write batch file which performs copy output to release archive\n"
+            "    -sh            - write batch file which performs copy output to release archive\n"
+            "    -prefix        - used while batch/sh file generated, must contain full path and name of the built file\n"
+            "    -targetprefix  - used while batch/sh file generated, must contain full path and name of the archive target file\n"
+            "    -suffix        - used while batch/sh file generated, must contain extention of the built file\n"
             ;
+}
+
+inline
+std::string normalizePath(std::string s, char sep)
+{
+    for(auto &ch: s)
+    {
+        if (ch=='/' || ch=='\\')
+            ch = sep;
+    }
+
+    return s;
+}
+
+inline
+std::string normalizePath(const std::string &s)
+{
+    #if defined(WIN32) || defined(_WIN32)
+        return normalizePath(s, '\\');
+    #else
+        return normalizePath(s, '/');
+    #endif
 }
 
 
@@ -118,6 +156,12 @@ int main(int argc, char* argv[])
     
     }
 
+    std::string prefix;
+    std::string suffix;
+    std::string targetprefix;
+    std::string macroprefix;
+    std::string macrosuffix = "_";
+
 
     OutputType ot = otNone;
 
@@ -138,7 +182,12 @@ int main(int argc, char* argv[])
                 return 1;
             }
 
-            if (argStr=="gmtime")
+            if (argStr=="h")
+            {
+                printUsage();
+                return 1;
+            }
+            else if (argStr=="gmtime")
             {
                 if (!filenameMode)
                 {
@@ -153,7 +202,7 @@ int main(int argc, char* argv[])
                 localTimeUsed = false;
                 ot = otNone;
             }
-            else if (argStr=="lttime" || argStr=="localtime")
+            else if (argStr=="lctime" || argStr=="localtime")
             {
                 if (!filenameMode)
                 {
@@ -218,12 +267,25 @@ int main(int argc, char* argv[])
                 ot = otDatePp;
             else if (argStr=="timepp")
                 ot = otTimePp;
+            else if (argStr=="bat")
+                ot = otBat;
+            else if (argStr=="sh")
+                ot = otSh;
+            else if (argStr=="macroprefix")
+                ot = otMacroPrefix;
+            else if (argStr=="macrosuffix")
+                ot = otMacroSuffix;
+            else if (argStr=="prefix")
+                ot = otPrefix;
+            else if (argStr=="suffix")
+                ot = otSuffix;
+            else if (argStr=="targetprefix")
+                ot = otTargetPrefix;
             else
             {
                 cerr << "Invalid option: '-"<<argStr<<"'\n";
                 printUsage();
                 return 1;
-            
             }
         }
         else
@@ -236,7 +298,38 @@ int main(int argc, char* argv[])
                  return 1;
             }
 
-            std::ofstream ofs = std::ofstream(argStr, std::ios_base::out|std::ios_base::trunc);
+            if (ot==otPrefix)
+            {
+                prefix = argStr;
+                ot = otNone;
+                continue;
+            }
+            else if (ot==otSuffix)
+            {
+                suffix = argStr;
+                ot = otNone;
+                continue;
+            }
+            else if (ot==otTargetPrefix)
+            {
+                targetprefix = argStr;
+                ot = otNone;
+                continue;
+            }
+            else if (ot==otMacroPrefix)
+            {
+                macroprefix = argStr;
+                ot = otNone;
+                continue;
+            }
+            else if (ot==otMacroSuffix)
+            {
+                macrosuffix = argStr;
+                ot = otNone;
+                continue;
+            }
+
+            std::ofstream ofs = std::ofstream(normalizePath(argStr), std::ios_base::out|std::ios_base::trunc);
             if (!ofs)
             {
                 cerr << "Failed to open output file: '"<<argStr<<"'\n";
@@ -254,8 +347,49 @@ int main(int argc, char* argv[])
                 case otTimeQ  : ofs << "\""<<timeNowStr<<"\""; break;
                 case otDateQlf: ofs << "\""<<dateNowStr<<"\"\n"; break;
                 case otTimeQlf: ofs << "\""<<timeNowStr<<"\"\n"; break;
-                case otDatePp : ofs << "#define UMBA_DATE__  \""<<dateNowStr<<"\"\n"; break;
-                case otTimePp : ofs << "#define UMBA_TIME__  \""<<timeNowStr<<"\"\n"; break;
+                case otDatePp : ofs << "#define "<<macroprefix<<"DATE"<<macrosuffix<<"  \""<<dateNowStr<<"\"\n"; break;
+                case otTimePp : ofs << "#define "<<macroprefix<<"TIME"<<macrosuffix<<"  \""<<timeNowStr<<"\"\n"; break;
+                case otBat    : 
+                {
+                    std::string dtStr = ltDateNowFnStr;
+                    std::string tmStr = ltTimeNowFnStr;
+
+                    if (!localTimeUsed)
+                    {
+                        dtStr = gmDateNowFnStr;
+                        tmStr = gmTimeNowFnStr;
+                    }
+
+                    auto normPrefix       = normalizePath(prefix, '\\');
+                    auto normTargetPrefix = normalizePath(targetprefix, '\\');
+
+                    ofs << "copy \""
+                        << normPrefix       << suffix << "\" \""
+                        << normTargetPrefix << "_" << dtStr << "_" << tmStr << suffix << "\" >nul\n";
+                    break;
+                }
+
+                case otSh     :
+                {
+                    std::string dtStr = ltDateNowFnStr;
+                    std::string tmStr = ltTimeNowFnStr;
+
+                    if (!localTimeUsed)
+                    {
+                        dtStr = gmDateNowFnStr;
+                        tmStr = gmTimeNowFnStr;
+                    }
+
+                    auto normPrefix       = normalizePath(prefix, '/');
+                    auto normTargetPrefix = normalizePath(targetprefix, '/');
+
+                    ofs << "#!/bin/sh\n"
+                        << "cp \""
+                        << normPrefix       << suffix << "\" \""
+                        << normTargetPrefix << "_" << dtStr << "_" << tmStr << suffix << "\"\n";
+                    break;
+                }
+
                 default: 
                 {
                     cerr << "Unknown state while writting output file '"<<argStr<<"'\n";
@@ -263,6 +397,8 @@ int main(int argc, char* argv[])
                     return 1;
                 }
             }
+
+            ot = otNone;
         }
     }
 

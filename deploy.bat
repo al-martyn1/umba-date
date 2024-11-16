@@ -1,0 +1,1 @@
+copy /B /Y umba-date.exe "%UMBA_TOOLS%\bin\umba-date.exe"
