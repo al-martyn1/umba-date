@@ -96,17 +96,6 @@ function(umba_generate_umba_date_umba_time_for_target TARGET)
     add_custom_command(
       TARGET ${TARGET}
       PRE_BUILD
-
-        #[build] TARGET_FILE: "C:/work/projects/firmware/firmware_ES_4007_BMCL/.out/GCC 13.2 STM32/none-arm/Debug/ES_4007_BMCL_R_1_0_DBG8M.elf" 
-        #[build] TARGET_FILE_NAME: ES_4007_BMCL_R_1_0_DBG8M.elf 
-        #[build] TARGET_FILE_DIR: "C:/work/projects/firmware/firmware_ES_4007_BMCL/.out/GCC 13.2 STM32/none-arm/Debug" 
-        #[build] TARGET_FILE_BASE_NAME: ES_4007_BMCL_R_1_0_DBG8M 
-        #COMMAND echo TARGET_FILE: $<TARGET_FILE:${TARGET}>
-        #COMMAND echo TARGET_FILE_NAME: $<TARGET_FILE_NAME:${TARGET}>
-        #COMMAND echo TARGET_FILE_DIR: $<TARGET_FILE_DIR:${TARGET}>
-        #COMMAND echo TARGET_FILE_BASE_NAME: $<TARGET_FILE_BASE_NAME:${TARGET}>
-        #COMMAND echo TARGET_FILE_PREFIX: $<TARGET_FILE_PREFIX:${TARGET}>
-
         COMMAND umba-date -localtime
           -macroprefix UMBA_
           -macrosuffix __
